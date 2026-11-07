@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"translate-remember-repeat/internal/domain"
 )
 
@@ -34,6 +35,7 @@ func NewTranslateUsecase(
 
 func (t *translateUsecase) Exec(ctx context.Context) {
 
+	fmt.Println("CnnStr:", os.Getenv("CNN_STR"))
 	t.WriteEnteringMessage()
 
 	for {

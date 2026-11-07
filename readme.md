@@ -17,6 +17,11 @@ LOOOOOOOOOOOL, implement API requests manually, but at the end
 realised that resp.StatusCode == 451 (Unavailable For Legal Reasons)
 So the solutions are to use VPN every turn on the code or to use this
 library :D and a VPN. Will use VPN + my implementation
+
+OK, it will be imposible to use, if I will create of code container
+I will turn the postgres and the redis on in containers
+But code will run localy (using this services)
+
 ---
 ### **Service that I do to practise Redis a little, and it is some kind of usefull**
 
