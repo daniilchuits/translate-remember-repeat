@@ -2,26 +2,44 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"os"
-	"time"
-
-	"github.com/joho/godotenv"
-	"github.com/redis/go-redis/v9"
+	"os/signal"
+	"syscall"
+	"translate-remember-repeat/internal/cli"
+	deeplapi "translate-remember-repeat/internal/infrastructure/deepl_api"
+	"translate-remember-repeat/internal/usecases"
 )
+
+func fatalErr(err error, msg string) {
+	if err != nil {
+		log.Panicf("Error %s: %s", msg, err.Error())
+	}
+}
 
 func main() {
 
-	if err := godotenv.Load(".env"); err != nil {
-		panic(fmt.Sprintf("Error loading '.env': %s", err))
-	}
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+	defer stop()
 
-	cnnStr := os.Getenv("REDIS_CNN_STR")
-	fmt.Println(cnnStr)
-	client := redis.NewClient(&redis.Options{
-		Addr: cnnStr,
-	})
+	deeplStruct := deeplapi.New(os.Getenv("DEEPL_AUTH_KEY"))
+	cliStruct := cli.New()
 
-	client.Set(context.Background(), "hello", "world", time.Second)
-	fmt.Println(client.Get(context.Background(), "hello"))
+	translateUsecase := usecases.NewTranslateUsecase(
+		deeplStruct,
+		cliStruct,
+	)
+
+	go translateUsecase.Exec(ctx)
+
+	<-ctx.Done()
 }
+
+// cnnStr := os.Getenv("REDIS_CNN_STR")
+// client := redis.NewClient(&redis.Options{
+// 	Addr: cnnStr,
+// })

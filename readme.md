@@ -10,6 +10,13 @@ are recorded to Redis. If it does not exist - the program sends
 request to TranslateAPI (don't know exact service) with context.
 Service remembers this data via postgresql note: 
         (word; translation; context)
+
+Found a library to easily deal with deepL (deepL-go/deepL),
+but would do this manually
+LOOOOOOOOOOOL, implement API requests manually, but at the end
+realised that resp.StatusCode == 451 (Unavailable For Legal Reasons)
+So the solutions are to use VPN every turn on the code or to use this
+library :D and a VPN. Will use VPN + my implementation
 ---
 ### **Service that I do to practise Redis a little, and it is some kind of usefull**
 
