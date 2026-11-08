@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -18,7 +17,6 @@ type redisManager struct {
 func New() (*redisManager, error) {
 
 	cnnStr := os.Getenv("REDIS_CNN_STR")
-	log.Println("CnnStr:", cnnStr)
 	if cnnStr == "" {
 		return nil, errors.New("Empty 'REDIS_CNN_STR' variable in '.env'")
 	}

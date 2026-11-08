@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"translate-remember-repeat/internal/domain"
 )
 
@@ -41,6 +42,9 @@ func (c *cliStruct) WriteCasualMessage(ctx context.Context) (string, error) {
 	case r := <-res:
 		if r.err != nil {
 			return "", fmt.Errorf("%w: %w", domain.Shutdown, r.err)
+		}
+		if strings.ToLower(r.message) == "test" {
+			return domain.Test.String(), nil
 		}
 		return r.message, nil
 	}

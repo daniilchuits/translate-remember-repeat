@@ -28,11 +28,16 @@ type redis interface {
 	Read(ctx context.Context, sentence string) (*domain.ResponseOfDeepL, error)
 }
 
+type tester interface {
+	Test(ctx context.Context) error
+}
+
 type translateUsecase struct {
 	apiSender
 	cliWriter
 	repo
 	redis
+	tester
 }
 
 func NewTranslateUsecase(
@@ -40,12 +45,14 @@ func NewTranslateUsecase(
 	cliWriter cliWriter,
 	repo repo,
 	redis redis,
+	tester tester,
 ) *translateUsecase {
 	return &translateUsecase{
 		apiSender: apiSender,
 		cliWriter: cliWriter,
 		repo:      repo,
 		redis:     redis,
+		tester:    tester,
 	}
 }
 
@@ -60,6 +67,13 @@ func (t *translateUsecase) Exec(ctx context.Context) {
 				panic(err)
 			}
 			log.Println(err)
+			continue
+		}
+
+		if sentence == domain.Test.String() {
+			if err = t.Test(ctx); err != nil {
+				log.Panic(err)
+			}
 			continue
 		}
 

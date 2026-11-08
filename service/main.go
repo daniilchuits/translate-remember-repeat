@@ -10,6 +10,7 @@ import (
 	deeplapi "translate-remember-repeat/internal/infrastructure/deepl_api"
 	"translate-remember-repeat/internal/infrastructure/redis"
 	"translate-remember-repeat/internal/infrastructure/repo"
+	"translate-remember-repeat/internal/test"
 	"translate-remember-repeat/internal/usecases"
 )
 
@@ -41,11 +42,22 @@ func main() {
 	redisClient, err := redis.New()
 	fatalErr(err, "connecting redis")
 
+	sentLister := test.NewGetKeysUsecase(
+		redisClient,
+		repoManager,
+	)
+
+	testUsecase := usecases.NewTestUsecase(
+		cliStruct,
+		sentLister,
+	)
+
 	translateUsecase := usecases.NewTranslateUsecase(
 		deeplStruct,
 		cliStruct,
 		repoManager,
 		redisClient,
+		testUsecase,
 	)
 
 	go translateUsecase.Exec(ctx)
