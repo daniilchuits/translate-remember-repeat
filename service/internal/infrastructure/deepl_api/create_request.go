@@ -11,20 +11,20 @@ import (
 	"translate-remember-repeat/internal/domain"
 )
 
-func (d *deepLStruct) SendRequest(ctx context.Context, text []string) (string, error) {
+func (d *deepLStruct) SendRequest(ctx context.Context, text []string) (*domain.ResponseOfDeepL, error) {
 
 	req, err := d.createRequest(ctx, text)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	client := http.Client{Timeout: 5 * time.Second}
 
 	resp, err := d.doRequestParseResponse(client, req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return resp.Text(), nil
+	return resp, nil
 }
 
 //

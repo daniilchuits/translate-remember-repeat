@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"log"
-	"os"
 	"os/signal"
 	"syscall"
 	"translate-remember-repeat/internal/cli"
+	"translate-remember-repeat/internal/db"
 	deeplapi "translate-remember-repeat/internal/infrastructure/deepl_api"
+	"translate-remember-repeat/internal/infrastructure/repo"
 	"translate-remember-repeat/internal/usecases"
 )
 
@@ -26,12 +27,18 @@ func main() {
 	)
 	defer stop()
 
-	deeplStruct := deeplapi.New(os.Getenv("DEEPL_AUTH_KEY"))
+	err := db.InitTranslationsTable(ctx)
+	fatalErr(err, "initializing table")
+	deeplStruct := deeplapi.New()
 	cliStruct := cli.New()
+	repoManager, err := repo.OpenDB()
+	fatalErr(err, "creating repoManager")
+	defer repoManager.Close()
 
 	translateUsecase := usecases.NewTranslateUsecase(
 		deeplStruct,
 		cliStruct,
+		repoManager,
 	)
 
 	go translateUsecase.Exec(ctx)

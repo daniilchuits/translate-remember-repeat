@@ -3,43 +3,49 @@ package usecases
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
-	"os"
 	"translate-remember-repeat/internal/domain"
 )
 
 type apiSender interface {
-	SendRequest(ctx context.Context, text []string) (string, error)
+	SendRequest(ctx context.Context, text []string) (*domain.ResponseOfDeepL, error)
 }
 
 type cliWriter interface {
 	WriteEnteringMessage()
 	WriteCasualMessage(ctx context.Context) (string, error)
+	LogResponse(sentence string, resp *domain.ResponseOfDeepL)
+}
+
+type repo interface {
+	InsertTranslationsPSQL(ctx context.Context, sentence string, resp *domain.ResponseOfDeepL) error
+	SelectFromTranslationsPSQL(ctx context.Context, sentence string) (*domain.ResponseOfDeepL, error)
 }
 
 type translateUsecase struct {
 	apiSender
 	cliWriter
+	repo
 }
 
 func NewTranslateUsecase(
 	apiSender apiSender,
 	cliWriter cliWriter,
+	repo repo,
 ) *translateUsecase {
 	return &translateUsecase{
 		apiSender: apiSender,
 		cliWriter: cliWriter,
+		repo:      repo,
 	}
 }
 
 func (t *translateUsecase) Exec(ctx context.Context) {
 
-	fmt.Println("CnnStr:", os.Getenv("CNN_STR"))
 	t.WriteEnteringMessage()
 
 	for {
-		str, err := t.WriteCasualMessage(ctx)
+		sentence, err := t.WriteCasualMessage(ctx)
 		if err != nil {
 			if errors.Is(err, domain.ReadingCLI) {
 				panic(err)
@@ -48,12 +54,28 @@ func (t *translateUsecase) Exec(ctx context.Context) {
 			continue
 		}
 
-		translation, err := t.SendRequest(ctx, []string{str})
+		resp, err := t.SelectFromTranslationsPSQL(ctx, sentence)
+		if err == nil {
+			log.Println("Used psql")
+			t.LogResponse(sentence, resp)
+			continue
+		}
+		if !errors.Is(err, domain.NoRowsFound) {
+			log.Println(err)
+		}
+
+		resp, err = t.SendRequest(ctx, []string{sentence})
 		if err != nil {
 			log.Println(err)
 			continue
 		}
-		fmt.Println("Translation:", translation)
+
+		t.LogResponse(sentence, resp)
+		if err = t.InsertTranslationsPSQL(ctx, sentence, resp); err != nil {
+			log.Panicln(err)
+		} else {
+			log.Println("Inserted")
+		}
 	}
 
 }

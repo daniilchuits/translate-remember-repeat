@@ -21,4 +21,9 @@ var (
 
 	// cli
 	ReadingCLI error = errors.New("Error reading cli message")
+
+	// psql
+	NoRowsFound   error = errors.New("Error: no rows are found")
+	ReadingPSQL   error = errors.New("Error reading psql's data")
+	InsertingPSQL error = errors.New("Error inserting into 'translations'")
 )

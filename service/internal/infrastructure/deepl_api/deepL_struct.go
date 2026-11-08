@@ -2,6 +2,7 @@ package deeplapi
 
 import (
 	"fmt"
+	"os"
 	"translate-remember-repeat/internal/domain"
 )
 
@@ -12,9 +13,8 @@ type deepLStruct struct {
 	requestMethod string
 }
 
-func New(
-	deepLAuthKey string,
-) *deepLStruct {
+func New() *deepLStruct {
+	deepLAuthKey := os.Getenv("DEEPL_AUTH_KEY")
 	defautLink := domain.DefaultLink
 	contentType := domain.ContentType
 	requestMethod := domain.RequestMethod
