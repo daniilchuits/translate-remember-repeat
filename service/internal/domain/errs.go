@@ -26,4 +26,7 @@ var (
 	NoRowsFound   error = errors.New("Error: no rows are found")
 	ReadingPSQL   error = errors.New("Error reading psql's data")
 	InsertingPSQL error = errors.New("Error inserting into 'translations'")
+
+	// redis
+	SettingRedis error = errors.New("Error setting in redis")
 )

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"strings"
 	"translate-remember-repeat/internal/domain"
 )
 
@@ -22,21 +23,29 @@ type repo interface {
 	SelectFromTranslationsPSQL(ctx context.Context, sentence string) (*domain.ResponseOfDeepL, error)
 }
 
+type redis interface {
+	Save(ctx context.Context, sentence string, resp *domain.ResponseOfDeepL) error
+	Read(ctx context.Context, sentence string) (*domain.ResponseOfDeepL, error)
+}
+
 type translateUsecase struct {
 	apiSender
 	cliWriter
 	repo
+	redis
 }
 
 func NewTranslateUsecase(
 	apiSender apiSender,
 	cliWriter cliWriter,
 	repo repo,
+	redis redis,
 ) *translateUsecase {
 	return &translateUsecase{
 		apiSender: apiSender,
 		cliWriter: cliWriter,
 		repo:      repo,
+		redis:     redis,
 	}
 }
 
@@ -54,10 +63,20 @@ func (t *translateUsecase) Exec(ctx context.Context) {
 			continue
 		}
 
-		resp, err := t.SelectFromTranslationsPSQL(ctx, sentence)
+		sentence = strings.ToLower(sentence)
+
+		resp, err := t.Read(ctx, sentence)
 		if err == nil {
-			log.Println("Used psql")
 			t.LogResponse(sentence, resp)
+			continue
+		}
+
+		resp, err = t.SelectFromTranslationsPSQL(ctx, sentence)
+		if err == nil {
+			t.LogResponse(sentence, resp)
+			if err = t.Save(ctx, sentence, resp); err != nil {
+				log.Println(err)
+			}
 			continue
 		}
 		if !errors.Is(err, domain.NoRowsFound) {
@@ -73,9 +92,6 @@ func (t *translateUsecase) Exec(ctx context.Context) {
 		t.LogResponse(sentence, resp)
 		if err = t.InsertTranslationsPSQL(ctx, sentence, resp); err != nil {
 			log.Panicln(err)
-		} else {
-			log.Println("Inserted")
 		}
 	}
-
 }

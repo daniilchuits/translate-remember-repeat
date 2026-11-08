@@ -22,6 +22,14 @@ func (r *ResponseOfDeepL) DetechedSourceLanguage() string {
 	return r.Translations[0].DetechedSourceLanguage
 }
 
+func (t translation) Translation() string {
+	return t.Text
+}
+
+func (t translation) DetechedLanguage() string {
+	return t.DetechedSourceLanguage
+}
+
 func CreateResponse(text, detLang string) *ResponseOfDeepL {
 	return &ResponseOfDeepL{
 		Translations: []translation{
