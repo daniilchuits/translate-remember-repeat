@@ -40,3 +40,8 @@ func CreateResponse(text, detLang string) *ResponseOfDeepL {
 		},
 	}
 }
+
+type Sentence struct {
+	Sent string
+	Type Source
+}

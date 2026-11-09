@@ -72,7 +72,7 @@ func (t *translateUsecase) Exec(ctx context.Context) {
 
 		if sentence == domain.Test.String() {
 			if err = t.Test(ctx); err != nil {
-				log.Panic(err)
+				log.Println(err)
 			}
 			continue
 		}

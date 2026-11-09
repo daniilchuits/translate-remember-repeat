@@ -10,14 +10,15 @@ import (
 	"translate-remember-repeat/internal/domain"
 )
 
+type scanResult struct {
+	message string
+	err     error
+}
+
 func (c *cliStruct) WriteCasualMessage(ctx context.Context) (string, error) {
 	fmt.Print(c.casualMessage)
 
-	type scanResult struct {
-		message string
-		err     error
-	}
-	res := make(chan scanResult)
+	res := make(chan scanResult, 1)
 
 	go func() {
 		scanner := bufio.NewScanner(os.Stdin)
