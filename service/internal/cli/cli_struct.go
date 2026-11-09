@@ -13,7 +13,7 @@ type cliStruct struct {
 	wrongAnswear     string
 	separators       string
 	separatorsTest   string
-	exit             string
+	exitText         string
 }
 
 func New() *cliStruct {
@@ -27,7 +27,7 @@ func New() *cliStruct {
 	wrongAnswear := domain.WrongAnswear
 	separators := domain.Separators
 	separatorsTest := domain.SeparatorsTest
-	exit := domain.Exit
+	exitText := domain.Exit
 	return &cliStruct{
 		enteringMessage:  enteringMessage,
 		casualMessage:    casualMessage,
@@ -39,6 +39,6 @@ func New() *cliStruct {
 		wrongAnswear:     wrongAnswear,
 		separators:       separators,
 		separatorsTest:   separatorsTest,
-		exit:             exit,
+		exitText:         exitText,
 	}
 }

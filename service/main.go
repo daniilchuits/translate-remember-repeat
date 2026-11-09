@@ -24,14 +24,14 @@ func fatalErr(err error, msg string) {
 
 func main() {
 
-	ctx, stop := signal.NotifyContext(
+	globalCtx, stop := signal.NotifyContext(
 		context.Background(),
 		syscall.SIGINT,
 		syscall.SIGTERM,
 	)
 	defer stop()
 
-	err := db.InitTranslationsTable(ctx)
+	err := db.InitTranslationsTable(globalCtx)
 	fatalErr(err, "initializing table")
 
 	deeplStruct := deeplapi.New()
@@ -71,11 +71,12 @@ func main() {
 		repoManager,
 		redisClient,
 		testUsecase,
+		cliStruct,
 	)
 
-	go translateUsecase.Exec(ctx)
+	go translateUsecase.Exec(globalCtx)
 
-	<-ctx.Done()
+	<-globalCtx.Done()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()

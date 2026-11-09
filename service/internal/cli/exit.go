@@ -7,9 +7,10 @@ import (
 
 func (cli *cliStruct) Exit(ctx context.Context) error {
 
-	if err := ctxCheck(ctx); err != nil {
-		return err
+	err := ctxCheck(ctx)
+	if err != nil {
+		return fmt.Errorf("Error exiting: %w", err)
 	}
-	fmt.Print(cli.exit)
+	fmt.Print(cli.exitText)
 	return nil
 }

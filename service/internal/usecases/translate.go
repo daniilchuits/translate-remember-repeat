@@ -3,7 +3,6 @@ package usecases
 import (
 	"context"
 	"errors"
-	"log"
 	"strings"
 	"translate-remember-repeat/internal/domain"
 )
@@ -32,12 +31,18 @@ type tester interface {
 	Test(ctx context.Context) error
 }
 
+type logger interface {
+	Log(ctx context.Context, msg string) error
+	Panic(msg string)
+}
+
 type translateUsecase struct {
 	apiSender
 	cliWriter
 	repo
 	redis
 	tester
+	logger
 }
 
 func NewTranslateUsecase(
@@ -46,6 +51,7 @@ func NewTranslateUsecase(
 	repo repo,
 	redis redis,
 	tester tester,
+	logger logger,
 ) *translateUsecase {
 	return &translateUsecase{
 		apiSender: apiSender,
@@ -53,6 +59,7 @@ func NewTranslateUsecase(
 		repo:      repo,
 		redis:     redis,
 		tester:    tester,
+		logger:    logger,
 	}
 }
 
@@ -63,16 +70,25 @@ func (t *translateUsecase) Exec(ctx context.Context) {
 	for {
 		sentence, err := t.WriteCasualMessage(ctx)
 		if err != nil {
-			if errors.Is(err, domain.ReadingCLI) {
-				panic(err)
+
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+				return
 			}
-			log.Println(err)
+
+			if errors.Is(err, domain.ReadingCLI) {
+				t.Panic(err.Error())
+			}
+			if err = t.Log(ctx, err.Error()); err != nil {
+				t.Panic(err.Error())
+			}
 			continue
 		}
 
 		if sentence == domain.Test.String() {
 			if err = t.Test(ctx); err != nil {
-				log.Println(err)
+				if err = t.Log(ctx, err.Error()); err != nil {
+					t.Panic(err.Error())
+				}
 			}
 			continue
 		}
@@ -89,23 +105,31 @@ func (t *translateUsecase) Exec(ctx context.Context) {
 		if err == nil {
 			t.LogResponse(sentence, resp)
 			if err = t.Save(ctx, sentence, resp); err != nil {
-				log.Println(err)
+				if err = t.Log(ctx, err.Error()); err != nil {
+					t.Panic(err.Error())
+				}
 			}
 			continue
 		}
 		if !errors.Is(err, domain.NoRowsFound) {
-			log.Println(err)
+			if err = t.Log(ctx, err.Error()); err != nil {
+				t.Panic(err.Error())
+			}
 		}
 
 		resp, err = t.SendRequest(ctx, []string{sentence})
 		if err != nil {
-			log.Println(err)
+			if err = t.Log(ctx, err.Error()); err != nil {
+				t.Panic(err.Error())
+			}
 			continue
 		}
 
 		t.LogResponse(sentence, resp)
 		if err = t.InsertTranslationsPSQL(ctx, sentence, resp); err != nil {
-			log.Panicln(err)
+			if err = t.Log(ctx, err.Error()); err != nil {
+				t.Panic(err.Error())
+			}
 		}
 	}
 }
