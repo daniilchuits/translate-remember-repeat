@@ -100,6 +100,11 @@ func (t *translateUsecase) Exec(ctx context.Context) {
 			t.LogResponse(sentence, resp)
 			continue
 		}
+		if !errors.Is(err, domain.NoNote) {
+			if err = t.Log(ctx, err.Error()); err != nil {
+				t.Panic(err.Error())
+			}
+		}
 
 		resp, err = t.SelectFromTranslationsPSQL(ctx, sentence)
 		if err == nil {

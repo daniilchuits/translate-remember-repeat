@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"translate-remember-repeat/internal/domain"
+
+	"github.com/redis/go-redis/v9"
 )
 
 func (manager *redisManager) Read(
@@ -15,6 +18,9 @@ func (manager *redisManager) Read(
 
 	val, err := manager.client.Get(ctx, sentence).Bytes()
 	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return nil, domain.NoNote
+		}
 		return nil, fmt.Errorf("Error getting from redis: %w", err)
 	}
 
