@@ -24,3 +24,5 @@ OK, it will be impossible to use if I create a container for the code. I'll run 
 5. The user can also type "test" in the invitation zone to start a simple test with random words. The test consists of `domain.TestSentences` tasks. Each sentence waits for the user's translation, then notifies the user whether their answer was right or wrong. At the end of the test, the user gets their final score and can request an analysis of it (work in progress).
 
 Also, apart from the "test" command, there will be "exit", "help", and some others (haven't come up with anything yet). First, I want to implement the analysis of the final results through RabbitMQ.
+---
+### Locally I did fast-forward merges, so the graph is not as nice as I thought.
