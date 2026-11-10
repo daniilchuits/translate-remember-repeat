@@ -29,6 +29,7 @@ var (
 
 	// redis
 	SettingRedis error = errors.New("Error setting in redis")
+	NoNote       error = errors.New("No note found in redis")
 
 	// test
 	WrongType error = errors.New("Wrong type of sentence: not postgres nor redis")
